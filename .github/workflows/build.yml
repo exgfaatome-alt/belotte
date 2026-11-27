@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Recupérer le code
+      - name: Récupérer le code
         uses: actions/checkout@v4
 
       - name: Installer Java (JDK 17)
@@ -20,10 +20,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Installer les outils Android (AAPT, Zipalign, Apksigner, etc.)
+      - name: Configurer le SDK Android
+        uses: android-actions/setup-android@v3
+
+      - name: Installer les composants SDK (Platform & Build-Tools)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y aapt zipalign apksigner default-jdk
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-33" "build-tools;33.0.2"
 
       - name: Rendre le script exécutable et le lancer
         run: |
