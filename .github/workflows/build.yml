@@ -3,11 +3,11 @@ name: Build and Release APK
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*' # Se déclenche uniquement quand vous poussez un tag (ex: v1.0.0)
+  workflow_dispatch: # Permet aussi de lancer le build manuellement
 
 permissions:
-  contents: write
+  contents: write # Nécessaire pour créer la Release et y attacher l'APK
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Installer les composants SDK (Platform & Build-Tools)
+      - name: Installer les composants SDK Android
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.2"
@@ -38,4 +38,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: build/BeloteDuSoir.apk
-          generate_release_notes: true
+          generate_release_notes: true # Génère automatiquement les notes de version basées sur les commits
