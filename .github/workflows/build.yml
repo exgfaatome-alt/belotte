@@ -1,10 +1,13 @@
-name: Build APK
+name: Build and Release APK
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -20,21 +23,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Configurer le SDK Android
-        uses: android-actions/setup-android@v3
-
       - name: Installer les composants SDK (Platform & Build-Tools)
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-33" "build-tools;33.0.2"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.2"
 
       - name: Rendre le script exécutable et le lancer
         run: |
           chmod +x build.sh
           ./build.sh
 
-      - name: Sauvegarder l'APK généré
-        uses: actions/upload-artifact@v4
+      - name: Publier l'APK dans les Releases GitHub
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: BeloteDuSoir
-          path: build/BeloteDuSoir.apk
+          files: build/BeloteDuSoir.apk
+          generate_release_notes: true
