@@ -1,0 +1,35 @@
+BELOTE DU SOIR — APPLICATION ANDROID
+====================================
+
+Installer sur un téléphone
+  1. Copie BeloteDuSoir.apk sur le téléphone (câble, mail, Drive…) et ouvre-le.
+  2. Android demande d'autoriser « l'installation d'applis inconnues » pour l'appli
+     qui ouvre le fichier (Fichiers, Chrome, Gmail…) : accepte, puis « Installer ».
+  3. Si Play Protect affiche un avertissement (appli non publiée sur le Play Store) :
+     « Plus de détails » > « Installer quand même ».
+  Android 6.0 minimum.
+
+Jouer en ligne depuis l'appli
+  Le relais belote.php reste sur ton espace free.fr (voir le LISEZ-MOI d'origine).
+  Dans l'appli : « Jouer en ligne » > Serveur > saisis
+      http://TON_IDENTIFIANT.free.fr/belote.php
+  (ou /belote/belote.php si tu l'as mis dans un sous-dossier). C'est mémorisé.
+  Les joueurs de l'appli et ceux du site web peuvent être dans la même salle.
+  « Copier le lien » et « Partager » utilisent le presse-papiers et le menu de partage d'Android ;
+  le lien envoyé ouvre la version web chez tes amis.
+
+Différences avec la version web
+  - Portrait imposé sur téléphone (libre sur tablette), écran toujours allumé pendant le jeu.
+  - Le bouton Retour met l'appli en arrière-plan sans perdre la partie.
+
+Recompiler (dossier projet)
+  Sous Ubuntu/Debian :
+    sudo apt install aapt apksigner zipalign dalvik-exchange android-sdk-platform-23 default-jdk
+    ./build.sh
+  Pour modifier le jeu, remplace assets/index.html (garde le petit <script> « pont Android »
+  ajouté juste après <head>).
+
+IMPORTANT — clé de signature
+  belote.keystore (mot de passe : belote2026, alias : belote) signe l'appli.
+  Garde-la : une mise à jour ne s'installe par-dessus l'ancienne version que si elle est
+  signée avec la même clé. Pense aussi à augmenter versionCode dans AndroidManifest.xml.
