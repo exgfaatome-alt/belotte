@@ -1,15 +1,18 @@
 #!/bin/bash
-# Construit BeloteDuSoir.apk sur GitHub Actions / Linux
+# Construit BeloteDuSoir.apk sur GitHub Actions
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# Recherche automatique de android.jar sur les runners Ubuntu
-if [ -d "/usr/lib/android-sdk" ]; then
-    AJ=$(find /usr/lib/android-sdk -name "android.jar" | head -n 1)
-elif [ -n "${ANDROID_HOME:-}" ]; then
-    AJ=$(find "$ANDROID_HOME" -name "android.jar" | head -n 1)
+# Localiser automatiquement android.jar dans le SDK Android
+if [ -n "${ANDROID_HOME:-}" ]; then
+    AJ=$(find "$ANDROID_HOME/platforms" -name "android.jar" | head -n 1)
 else
     AJ=${ANDROID_JAR:-/usr/lib/android-sdk/platforms/android-23/android.jar}
+fi
+
+if [ -z "$AJ" ] || [ ! -f "$AJ" ]; then
+    echo "Erreur : android.jar introuvable !"
+    exit 1
 fi
 
 echo "Utilisation de android.jar : $AJ"
@@ -22,14 +25,15 @@ aapt package -f -m -J build/gen -M AndroidManifest.xml -S res -I "$AJ"
 # 2. Compilation Java
 javac -nowarn -Xlint:-options -source 8 -target 8 -bootclasspath "$AJ" -d build/classes $(find src build/gen -name '*.java')
 
-# 3. Conversion en Dalvik dex (Note : sur Ubuntu, l'outil s'appelle souvent 'dx' ou 'd8', 'dalvik-exchange' n'existe pas par défaut)
-if command -v dx &> /dev/null; then
+# 3. Conversion en Dalvik dex (dx est inclus dans les build-tools d'Android)
+DX_TOOL=$(find "${ANDROID_HOME:-}/build-tools" -name "dx" | head -n 1)
+if [ -n "$DX_TOOL" ] && [ -x "$DX_TOOL" ]; then
+    "$DX_TOOL" --dex --output=build/classes.dex build/classes
+elif command -v dx &> /dev/null; then
     dx --dex --output=build/classes.dex build/classes
-elif command -v dalvik-exchange &> /dev/null; then
-    dalvik-exchange --dex --min-sdk-version=23 --output=build/classes.dex build/classes
 else
-    # Fallback si dx est dans le SDK Android
-    ${ANDROID_HOME:-}/build-tools/*/dx --dex --output=build/classes.dex build/classes
+    # Fallback si dalvik-exchange est disponible
+    dalvik-exchange --dex --min-sdk-version=23 --output=build/classes.dex build/classes
 fi
 
 # 4. Packaging de l'APK non signé
