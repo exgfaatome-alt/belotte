@@ -17,4 +17,4 @@ jobs:
 
       # Étape 2 : Exécuter le script de build
       - name: Run build script
-        run: ./build.sh
+        run: bash build.sh
